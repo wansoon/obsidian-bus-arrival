@@ -13,6 +13,8 @@
 
 ## 설치
 
+### 데스크톱 수동 설치
+
 저장소의 다음 파일을 Vault의 `.obsidian/plugins/bus-arrival/`에 복사합니다.
 
 - `main.js`
@@ -20,6 +22,43 @@
 - `styles.css`
 
 Obsidian을 다시 시작한 뒤 `설정 → 커뮤니티 플러그인`에서 **Bus Arrival**을 활성화합니다.
+
+## iPhone·iPad에서 사용
+
+### 방법 1: 같은 Vault 설정 동기화
+
+데스크톱과 iPhone·iPad에서 이미 같은 Vault를 동기화하고 있다면 이 방법이 가장 간단합니다.
+
+1. 동기화 대상에 `.obsidian/plugins/bus-arrival/` 폴더가 포함됐는지 확인합니다.
+2. 모바일 Obsidian을 완전히 종료했다가 다시 실행합니다.
+3. `설정 → 커뮤니티 플러그인`에서 커뮤니티 플러그인 사용을 허용합니다.
+4. 설치된 플러그인 목록에서 **Bus Arrival**을 활성화합니다.
+5. `설정 → Bus Arrival`에서 인증키와 자동 갱신 주기를 확인합니다.
+
+플러그인이 목록에 없으면 `.obsidian` 설정 폴더가 모바일로 동기화되지 않은 상태입니다. 플러그인의 `data.json`을 동기화하지 않았다면 모바일에서 인증키를 한 번 입력해야 합니다.
+
+API 호출은 기기별로 합산됩니다. 여러 기기에서 같은 문서를 동시에 열 수 있으므로 모바일에서는 평소 **자동 갱신 끄기**를 권장합니다.
+
+### 방법 2: BRAT으로 GitHub에서 설치
+
+1. 모바일 Obsidian의 `설정 → 커뮤니티 플러그인 → 탐색`에서 **BRAT**을 설치하고 활성화합니다.
+2. 이 저장소가 Private인 경우 GitHub에서 이 저장소에만 `Contents: Read-only` 권한을 가진 Fine-grained personal access token을 만듭니다.
+3. `설정 → BRAT`의 Private repository token 입력란에 토큰을 저장합니다.
+4. 명령 팔레트에서 `BRAT: Add a beta plugin for testing`을 실행합니다.
+5. 저장소 경로 `wansoon/obsidian-bus-arrival`을 입력하고 **Add Plugin**을 누릅니다.
+6. 설치가 끝나면 `설정 → 커뮤니티 플러그인`에서 **Bus Arrival**을 활성화합니다.
+7. `설정 → Bus Arrival`에 공공데이터포털 인증키를 입력합니다.
+
+- [BRAT 설치 안내](https://tfthacker.com/brat-quick-guide)
+- [BRAT Private 저장소 토큰 안내](https://tfthacker.com/brat-private-repo)
+- 저장소가 Public으로 전환되면 2~3단계의 토큰 설정은 필요하지 않습니다.
+
+### 모바일에서 보이지 않을 때
+
+- Obsidian과 BRAT을 최신 버전으로 업데이트합니다.
+- 커뮤니티 플러그인 목록을 새로고침합니다.
+- BRAT 명령 `Check for updates to all beta plugins and UPDATE`를 실행합니다.
+- 그래도 보이지 않으면 Obsidian을 완전히 종료한 뒤 다시 실행합니다.
 
 ## 공공데이터 API 준비
 

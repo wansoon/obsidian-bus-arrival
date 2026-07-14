@@ -1,0 +1,501 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>퇴근 버스 도착정보</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111315;
+      --card: #050607;
+      --line: #2b2f33;
+      --text: #eef2f6;
+      --muted: #aab2bd;
+      --accent: #87cee5;
+      --button: #25292d;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    }
+
+    main {
+      width: min(920px, calc(100% - 28px));
+      margin: 32px auto 60px;
+    }
+
+    h1 { margin: 0 0 8px; font-size: clamp(25px, 4vw, 36px); }
+    .description { margin: 0 0 24px; color: var(--muted); }
+
+    .controls, .card {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: var(--card);
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: minmax(220px, 1fr) auto auto;
+      gap: 10px;
+      padding: 16px;
+      margin-bottom: 18px;
+    }
+
+    input, select, button {
+      min-height: 44px;
+      border: 1px solid #3a3f44;
+      border-radius: 10px;
+      background: var(--button);
+      color: var(--text);
+      font: inherit;
+      padding: 8px 12px;
+    }
+
+    button { cursor: pointer; font-weight: 700; }
+    button:hover { background: #31363b; }
+    button:disabled { cursor: wait; opacity: .6; }
+
+    .notice {
+      grid-column: 1 / -1;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .cards { display: grid; gap: 28px; }
+    .journey {
+      border-left: 4px solid #40566d;
+      padding-left: 18px;
+    }
+
+    .journey__header { margin-bottom: 12px; }
+    .journey__step {
+      display: inline-block;
+      margin-bottom: 5px;
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .journey__title { margin: 0; font-size: clamp(22px, 3.6vw, 30px); }
+    .journey__description { margin: 6px 0 0; color: var(--muted); }
+    .journey__cards { display: grid; gap: 12px; }
+    .card { padding: 18px 20px; }
+    .card__header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .card h2 { margin: 0; color: #699bd3; font-size: clamp(20px, 3.4vw, 28px); }
+    .badge {
+      flex: none;
+      border-radius: 999px;
+      background: #17252b;
+      color: var(--accent);
+      padding: 5px 9px;
+      font-size: 12px;
+    }
+
+    .status { color: var(--muted); margin-bottom: 10px; font-size: 14px; }
+    .row {
+      display: grid;
+      grid-template-columns: minmax(90px, .7fr) 2fr;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .route { color: var(--accent); font-size: 20px; font-weight: 800; }
+    .first { font-size: 20px; font-weight: 750; }
+    .second, .empty { color: var(--muted); margin-top: 3px; }
+    .error { color: #ff9a9a; }
+
+    .api-info {
+      margin: 0 0 28px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #0b0d0f;
+      color: var(--muted);
+    }
+
+    .api-info summary {
+      cursor: pointer;
+      padding: 16px 18px;
+      color: var(--text);
+      font-weight: 750;
+    }
+
+    .api-info__body { padding: 0 18px 18px; line-height: 1.65; }
+    .api-info h3 { margin: 16px 0 6px; color: var(--text); font-size: 17px; }
+    .api-info ul, .api-info ol { margin: 8px 0; padding-left: 22px; }
+    .api-info a { color: var(--accent); }
+    .api-info code { color: #d9b7ff; }
+
+    @media (max-width: 680px) {
+      main { margin-top: 18px; }
+      .controls { grid-template-columns: 1fr; }
+      .notice { grid-column: 1; }
+      .journey { padding-left: 10px; }
+      .card { padding: 15px; }
+      .row { grid-template-columns: 80px 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>🚌 퇴근 버스 도착정보</h1>
+    <p class="description">상록마을에서 미금역을 거쳐 집으로 가는 버스만 표시합니다.</p>
+
+    <section class="controls" aria-label="조회 설정">
+      <input id="serviceKey" type="password" autocomplete="off" placeholder="공공데이터포털 Decoding 인증키">
+      <select id="refreshMode" aria-label="자동 갱신 주기">
+        <option value="0">수동 조회</option>
+        <option value="600">10분 자동 갱신</option>
+      </select>
+      <button id="refreshAll" type="button">전체 새로고침</button>
+      <div id="globalStatus" class="notice">
+        인증키는 기본 입력되어 있으며 화면에서 마스킹됩니다. 자동 갱신은 페이지가 화면에 보일 때만 작동합니다.
+      </div>
+    </section>
+
+    <details class="api-info">
+      <summary>API 및 인증키 안내</summary>
+      <div class="api-info__body">
+        <p>이 페이지는 공공데이터포털에서 제공하는 경기도 버스 Open API를 사용합니다.</p>
+
+        <h3>사용 API</h3>
+        <ul>
+          <li><a href="https://www.data.go.kr/data/15080346/openapi.do" target="_blank" rel="noreferrer">경기도 버스도착정보 조회</a> — 정류소별 실시간 도착 예정 시간</li>
+          <li><a href="https://www.data.go.kr/data/15080662/openapi.do" target="_blank" rel="noreferrer">경기도 버스노선 조회</a> — 노선 ID를 버스 번호로 변환</li>
+          <li><a href="https://www.data.go.kr/data/15080666/openapi.do" target="_blank" rel="noreferrer">경기도 정류소 조회</a> — 표기 정류소 번호를 내부 ID로 변환</li>
+        </ul>
+
+        <h3>인증키 발급 방법</h3>
+        <ol>
+          <li><a href="https://www.data.go.kr/" target="_blank" rel="noreferrer">공공데이터포털</a>에 로그인합니다.</li>
+          <li>위 API 세 개를 각각 열고 <strong>활용신청</strong>을 누릅니다.</li>
+          <li>마이페이지의 Open API 개발계정에서 승인 상태를 확인합니다.</li>
+          <li>발급된 일반 인증키 중 <strong>Decoding 키</strong>를 인증키 입력란에 사용합니다.</li>
+        </ol>
+        <p>개발계정의 기본 신청 가능 트래픽은 API별 하루 1,000회입니다. 이 페이지는 기본 수동 조회이며 자동 갱신은 10분으로 제한합니다.</p>
+      </div>
+    </details>
+
+    <div id="cards" class="cards"></div>
+  </main>
+
+  <script>
+    const DEFAULT_SERVICE_KEY = "";
+    const JOURNEYS = [
+      {
+        id: "sangnok-migeum",
+        step: "1구간",
+        title: "상록마을 → 미금역",
+        description: "내리는 위치에 따라 환승 정류장까지 걸어야 하는지가 달라집니다.",
+        stops: [
+          {
+            id: "transfer",
+            stationId: "206000097",
+            title: "환승정거장 하차",
+            badge: "도보 없이 바로 환승",
+            routes: ["누리4", "720-1", "380", "250"],
+          },
+          {
+            id: "migeum",
+            stationId: "206000097",
+            title: "미금역 하차",
+            badge: "환승 정류장까지 도보",
+            routes: ["700-1A", "820", "520", "300", "390"],
+          },
+        ],
+      },
+      {
+        id: "migeum-home",
+        step: "2구간",
+        title: "미금역 → 집",
+        description: "미금역.2001아울렛 정류장에서 아파트 방향 버스를 탑니다.",
+        stops: [
+          {
+            id: "home",
+            mobileNo: "07045",
+            title: "미금역.2001아울렛 → 집",
+            badge: "귀가",
+            routes: ["11", "15", "5", "700-2"],
+          },
+        ],
+      },
+    ];
+    const STOPS = JOURNEYS.flatMap((journey) => journey.stops);
+
+    const serviceKeyInput = document.querySelector("#serviceKey");
+    const refreshMode = document.querySelector("#refreshMode");
+    const refreshButton = document.querySelector("#refreshAll");
+    const globalStatus = document.querySelector("#globalStatus");
+    const cardsRoot = document.querySelector("#cards");
+    const routeNameCache = new Map();
+    const stationIdCache = new Map();
+    const arrivalCache = new Map();
+    let timer = null;
+    let countdownTimer = null;
+    let nextRefreshAt = 0;
+
+    serviceKeyInput.value = localStorage.getItem("busArrivalServiceKey") || DEFAULT_SERVICE_KEY;
+
+    function createCards() {
+      for (const journey of JOURNEYS) {
+        const section = document.createElement("section");
+        section.className = "journey";
+        section.innerHTML = `
+          <header class="journey__header">
+            <span class="journey__step">${journey.step}</span>
+            <h2 class="journey__title">${journey.title}</h2>
+            <p class="journey__description">${journey.description}</p>
+          </header>
+          <div class="journey__cards"></div>
+        `;
+        const journeyCards = section.querySelector(".journey__cards");
+        for (const stop of journey.stops) {
+          const card = document.createElement("section");
+          card.className = "card";
+          card.dataset.cardId = stop.id;
+          card.innerHTML = `
+            <div class="card__header">
+              <h2>🚌 ${stop.title}</h2>
+              <span class="badge">${stop.badge}</span>
+            </div>
+            <div class="status">전체 새로고침을 눌러 조회하세요.</div>
+            <div class="list"></div>
+          `;
+          journeyCards.append(card);
+        }
+        cardsRoot.append(section);
+      }
+    }
+
+    function normalizeKey(value) {
+      const trimmed = value.trim();
+      if (!trimmed.includes("%")) return trimmed;
+      try { return decodeURIComponent(trimmed); } catch { return trimmed; }
+    }
+
+    function makeUrl(path, params) {
+      const query = new URLSearchParams({
+        serviceKey: normalizeKey(serviceKeyInput.value),
+        format: "json",
+        ...params,
+      });
+      return `https://apis.data.go.kr/6410000/${path}?${query}`;
+    }
+
+    function messageBody(json) {
+      return json?.response?.msgBody || json?.msgBody || null;
+    }
+
+    function apiError(json) {
+      const header = json?.response?.comMsgHeader || json?.comMsgHeader;
+      if (!header) return null;
+      const code = header.returnCode || header.errMsg;
+      if (!code || String(code) === "0" || String(code).toUpperCase() === "NORMAL SERVICE.") return null;
+      return header.errMsg || header.returnMessage || String(code);
+    }
+
+    function asArray(value) {
+      if (!value) return [];
+      return Array.isArray(value) ? value : [value];
+    }
+
+    async function requestJson(path, params) {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 15000);
+      try {
+        const response = await fetch(makeUrl(path, params), { signal: controller.signal });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const json = await response.json();
+        const error = apiError(json);
+        if (error) throw new Error(error);
+        return json;
+      } catch (error) {
+        if (error.name === "AbortError") throw new Error("API 응답 시간이 초과되었습니다.");
+        if (error instanceof TypeError) {
+          throw new Error("브라우저가 API 직접 호출을 차단했습니다(CORS). 서버를 통해 열어야 합니다.");
+        }
+        throw error;
+      } finally {
+        clearTimeout(timeout);
+      }
+    }
+
+    async function resolveStationId(stop) {
+      if (stop.stationId) return stop.stationId;
+      if (stationIdCache.has(stop.mobileNo)) return stationIdCache.get(stop.mobileNo);
+      const json = await requestJson("busstationservice/v2/getBusStationListv2", { keyword: stop.mobileNo });
+      const stations = asArray(messageBody(json)?.busStationList);
+      const station = stations.find((item) =>
+        String(item.mobileNo || "").replace(/\D/g, "") === stop.mobileNo
+      );
+      if (!station?.stationId) throw new Error(`정류소 ${stop.mobileNo}의 실제 ID를 찾지 못했습니다.`);
+      const stationId = String(station.stationId);
+      stationIdCache.set(stop.mobileNo, stationId);
+      return stationId;
+    }
+
+    async function fetchArrivals(stationId) {
+      const now = Date.now();
+      const cached = arrivalCache.get(stationId);
+      if (cached && cached.expiresAt > now) return cached.promise;
+      const promise = requestJson("busarrivalservice/v2/getBusArrivalListv2", { stationId })
+        .then((json) => asArray(messageBody(json)?.busArrivalList));
+      arrivalCache.set(stationId, { promise, expiresAt: now + 30000 });
+      promise.catch(() => arrivalCache.delete(stationId));
+      return promise;
+    }
+
+    async function fetchRouteName(routeId) {
+      const key = String(routeId || "");
+      if (routeNameCache.has(key)) return routeNameCache.get(key);
+      const json = await requestJson("busrouteservice/v2/getBusRouteInfoItemv2", { routeId: key });
+      const name = String(messageBody(json)?.busRouteInfoItem?.routeName || key);
+      routeNameCache.set(key, name);
+      return name;
+    }
+
+    function renderRows(stop, arrivals) {
+      const card = document.querySelector(`[data-card-id="${stop.id}"]`);
+      const list = card.querySelector(".list");
+      const status = card.querySelector(".status");
+      const routeSet = new Set(stop.routes.map((route) => route.toLowerCase()));
+      const filtered = arrivals
+        .filter((arrival) => routeSet.has(String(arrival.routeName).toLowerCase()))
+        .sort((a, b) => (Number(a.predictTime1) || 999) - (Number(b.predictTime1) || 999));
+
+      list.replaceChildren();
+      if (!filtered.length) {
+        list.innerHTML = '<div class="empty">현재 필터에 해당하는 도착 예정 버스가 없습니다.</div>';
+      } else {
+        for (const arrival of filtered) {
+          const row = document.createElement("div");
+          row.className = "row";
+          const first = arrival.predictTime1
+            ? `${arrival.predictTime1}분 (${arrival.locationNo1 || "?"}정거장)`
+            : "도착정보 없음";
+          const second = arrival.predictTime2
+            ? `<div class="second">다음 ${arrival.predictTime2}분 (${arrival.locationNo2 || "?"}정거장)</div>`
+            : "";
+          row.innerHTML = `
+            <div class="route">${arrival.routeName}</div>
+            <div><div class="first">${first}</div>${second}</div>
+          `;
+          list.append(row);
+        }
+      }
+      status.className = "status";
+      status.textContent = `마지막 갱신 ${new Date().toLocaleTimeString("ko-KR")}`;
+    }
+
+    function renderError(stop, error) {
+      const card = document.querySelector(`[data-card-id="${stop.id}"]`);
+      const status = card.querySelector(".status");
+      status.className = "status error";
+      status.textContent = `조회 실패: ${error.message || error}`;
+    }
+
+    async function refreshAll() {
+      if (!serviceKeyInput.value.trim()) {
+        globalStatus.className = "notice error";
+        globalStatus.textContent = "공공데이터포털 인증키를 입력하세요.";
+        serviceKeyInput.focus();
+        return;
+      }
+
+      localStorage.setItem("busArrivalServiceKey", serviceKeyInput.value.trim());
+      refreshButton.disabled = true;
+      globalStatus.className = "notice";
+      globalStatus.textContent = "도착정보를 불러오는 중…";
+      for (const stop of STOPS) {
+        const status = document.querySelector(`[data-card-id="${stop.id}"] .status`);
+        status.className = "status";
+        status.textContent = "도착정보를 불러오는 중…";
+      }
+
+      await Promise.all(STOPS.map(async (stop) => {
+        try {
+          const stationId = await resolveStationId(stop);
+          const arrivals = await fetchArrivals(stationId);
+          const enriched = await Promise.all(arrivals.map(async (arrival) => ({
+            ...arrival,
+            routeName: await fetchRouteName(arrival.routeId),
+          })));
+          renderRows(stop, enriched);
+        } catch (error) {
+          renderError(stop, error);
+        }
+      }));
+
+      refreshButton.disabled = false;
+      updateRefreshStatus();
+    }
+
+    function updateRefreshStatus() {
+      globalStatus.className = "notice";
+      if (refreshMode.value !== "600") {
+        globalStatus.textContent = "수동 조회 모드";
+        return;
+      }
+      if (document.hidden) {
+        globalStatus.textContent = "10분 자동 갱신 일시정지 · 화면으로 돌아오면 재개";
+        return;
+      }
+      const remainingSeconds = Math.max(0, Math.ceil((nextRefreshAt - Date.now()) / 1000));
+      const minutes = Math.floor(remainingSeconds / 60);
+      const seconds = String(remainingSeconds % 60).padStart(2, "0");
+      globalStatus.textContent = `10분 자동 갱신 중 · 다음 갱신까지 ${minutes}분 ${seconds}초`;
+    }
+
+    function scheduleRefresh() {
+      if (timer !== null) {
+        clearInterval(timer);
+        timer = null;
+      }
+      if (countdownTimer !== null) {
+        clearInterval(countdownTimer);
+        countdownTimer = null;
+      }
+      if (refreshMode.value === "600" && !document.hidden) {
+        nextRefreshAt = Date.now() + 600000;
+        timer = setInterval(() => {
+          nextRefreshAt = Date.now() + 600000;
+          refreshAll();
+        }, 600000);
+        countdownTimer = setInterval(updateRefreshStatus, 1000);
+      }
+      updateRefreshStatus();
+    }
+
+    refreshButton.addEventListener("click", () => {
+      if (refreshMode.value === "600") scheduleRefresh();
+      refreshAll();
+    });
+    refreshMode.addEventListener("change", () => {
+      scheduleRefresh();
+      if (refreshMode.value === "600") refreshAll();
+    });
+    document.addEventListener("visibilitychange", scheduleRefresh);
+    window.addEventListener("beforeunload", () => {
+      if (timer !== null) clearInterval(timer);
+      if (countdownTimer !== null) clearInterval(countdownTimer);
+    });
+
+    createCards();
+    scheduleRefresh();
+  </script>
+</body>
+</html>

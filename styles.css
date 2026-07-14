@@ -1,0 +1,50 @@
+.bus-arrival {
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin: 12px 0;
+  background: var(--background-secondary);
+}
+
+.bus-arrival__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.bus-arrival__refresh {
+  font-size: var(--font-ui-smaller);
+  padding: 4px 9px;
+}
+
+.bus-arrival__status {
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+  margin-bottom: 8px;
+}
+
+.bus-arrival__row {
+  display: grid;
+  grid-template-columns: minmax(76px, 0.7fr) 2fr;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 0;
+  border-top: 1px solid var(--background-modifier-border);
+}
+
+.bus-arrival__route {
+  font-weight: 700;
+  color: var(--interactive-accent);
+}
+
+.bus-arrival__first {
+  font-weight: 600;
+}
+
+.bus-arrival__second,
+.bus-arrival__empty {
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+}

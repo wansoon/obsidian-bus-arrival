@@ -1,0 +1,6 @@
+# Local secrets
+data.json
+.DS_Store
+
+# Coworker distribution file: contains the embedded API key
+web/index.html

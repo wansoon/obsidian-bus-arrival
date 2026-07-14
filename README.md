@@ -43,7 +43,7 @@ API 호출은 기기별로 합산됩니다. 여러 기기에서 같은 문서를
 
 1. 모바일 Obsidian의 `설정 → 커뮤니티 플러그인 → 탐색`에서 **BRAT**을 설치하고 활성화합니다.
 2. 아이폰 노트 화면을 위에서 아래로 당겨 명령 팔레트를 엽니다. 열리지 않으면 `≡ 메뉴 → 명령 팔레트(>_)`를 누릅니다.
-3. 명령 팔레트에서 `BRAT: Add a beta plugin for testing`을 실행합니다.
+3. 명령 팔레트에서 `BRAT: Plugins: Add a beta plugin for testing`을 실행합니다.
 4. 저장소 경로 `wansoon/obsidian-bus-arrival`을 입력하고 **Add Plugin**을 누릅니다.
 5. 설치가 끝나면 `설정 → 커뮤니티 플러그인`에서 **Bus Arrival**을 활성화합니다.
 6. `설정 → Bus Arrival`에 공공데이터포털 인증키를 입력합니다.
@@ -96,3 +96,9 @@ refreshSeconds: 60
 - `data.json`을 커밋하지 않습니다.
 - 인증키가 삽입된 `web/index.html`을 커밋하지 않습니다.
 - 공개 배포 시 API 키를 HTML에 직접 포함하지 말고 서버 측 프록시 사용을 권장합니다.
+
+## License
+
+이 프로젝트는 [MIT License](LICENSE)로 배포됩니다.
+
+Copyright (c) 2026 alecsiel

@@ -42,16 +42,14 @@ API 호출은 기기별로 합산됩니다. 여러 기기에서 같은 문서를
 ### 방법 2: BRAT으로 GitHub에서 설치
 
 1. 모바일 Obsidian의 `설정 → 커뮤니티 플러그인 → 탐색`에서 **BRAT**을 설치하고 활성화합니다.
-2. 이 저장소가 Private인 경우 GitHub에서 이 저장소에만 `Contents: Read-only` 권한을 가진 Fine-grained personal access token을 만듭니다.
-3. `설정 → BRAT`의 Private repository token 입력란에 토큰을 저장합니다.
-4. 명령 팔레트에서 `BRAT: Add a beta plugin for testing`을 실행합니다.
-5. 저장소 경로 `wansoon/obsidian-bus-arrival`을 입력하고 **Add Plugin**을 누릅니다.
-6. 설치가 끝나면 `설정 → 커뮤니티 플러그인`에서 **Bus Arrival**을 활성화합니다.
-7. `설정 → Bus Arrival`에 공공데이터포털 인증키를 입력합니다.
+2. 아이폰 노트 화면을 위에서 아래로 당겨 명령 팔레트를 엽니다. 열리지 않으면 `≡ 메뉴 → 명령 팔레트(>_)`를 누릅니다.
+3. 명령 팔레트에서 `BRAT: Add a beta plugin for testing`을 실행합니다.
+4. 저장소 경로 `wansoon/obsidian-bus-arrival`을 입력하고 **Add Plugin**을 누릅니다.
+5. 설치가 끝나면 `설정 → 커뮤니티 플러그인`에서 **Bus Arrival**을 활성화합니다.
+6. `설정 → Bus Arrival`에 공공데이터포털 인증키를 입력합니다.
 
 - [BRAT 설치 안내](https://tfthacker.com/brat-quick-guide)
-- [BRAT Private 저장소 토큰 안내](https://tfthacker.com/brat-private-repo)
-- 저장소가 Public으로 전환되면 2~3단계의 토큰 설정은 필요하지 않습니다.
+- 이 저장소는 Public이므로 GitHub 로그인이나 Private repository token이 필요하지 않습니다.
 
 ### 모바일에서 보이지 않을 때
 

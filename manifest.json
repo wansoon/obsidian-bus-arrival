@@ -1,9 +1,9 @@
 {
   "id": "bus-arrival",
   "name": "Bus Arrival",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "minAppVersion": "1.0.0",
   "description": "Render real-time Gyeonggi bus arrivals from bus-arrival code blocks.",
-  "author": "Local",
+  "author": "alecsiel",
   "isDesktopOnly": false
 }
